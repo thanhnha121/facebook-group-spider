@@ -1,10 +1,13 @@
 
 import java.awt.Color;
 import java.time.LocalDateTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 /*
@@ -269,10 +272,11 @@ public class UI extends javax.swing.JFrame implements Runnable {
     }//GEN-LAST:event_btnStartActionPerformed
 
     private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopActionPerformed
-        if((t.getState() + "").equals("TERMINATED")){
+        if (t != null && (t.getState() + "").equals("TERMINATED")) {
             ui.stopDriver();
             ui.alert("Stopped!");
             ui.writeLog("Stopped!");
+            t.stop();
             return;
         }
         if (t != null && t.isAlive()) {
@@ -290,7 +294,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
             System.out.println(e.getMessage());
         }
     }
-    
+
     public boolean checkValid() {
         if (tfUsername.getText().equals("")) {
             warningAlert("Warning: Empty username!");
@@ -340,6 +344,148 @@ public class UI extends javax.swing.JFrame implements Runnable {
         ui.writeLog(LocalDateTime.now() + "");
     }
 
+    private static WebDriver driver = null;
+    private static final String FB_URL = "https://m.facebook.com";
+
+    public void restart() {
+        ui.writeLog("Restarting...");
+        ui.infoAlert("Restarting...");
+
+        ui.stopDriver();
+
+        ui.infoAlert("Starting...");
+        ui.writeLog("Starting...");
+
+        t = new Thread(ui);
+        t.start();
+    }
+
+    @Override
+    public void run() {
+        try {
+            ui.infoAlert("Starting Chrome Webdriver...");
+            ui.writeLog("Starting Chrome Webdriver...");
+
+            int count = Integer.parseInt(tfCount.getText().trim());
+            String groupId = tfGroupId.getText().trim();
+
+            System.setProperty("webdriver.chrome.driver", "D:\\facebook-group-spider\\chromedriver.exe");
+            UI.driver = new ChromeDriver();
+
+            ui.infoAlert("Processing...");
+
+            UI.driver.get(FB_URL);
+
+            Thread.sleep(2000);
+
+            UI.driver.findElement(By.name("email")).sendKeys(tfUsername.getText().trim());
+            UI.driver.findElement(By.name("pass")).sendKeys(pwfPassword.getText().trim());
+            UI.driver.findElement(By.name("login")).click();
+
+            Thread.sleep(2000);
+
+            for (int k = 1; k < count; k++) {
+                ui.writeLog("Run " + k + "/" + count);
+                UI.driver.get(FB_URL + "/" + groupId);
+
+                Thread.sleep(2000);
+
+                List<WebElement> elements = driver.findElements(By.xpath("//section//article"));
+
+                for (WebElement element : elements) {
+                    try {
+                        String user_fullname = element.findElement(By.xpath(".//header//div//div//a//i")).getAttribute("aria-label");
+                        String user_picture = element.findElement(By.xpath(".//header//div//div//a//i")).getCssValue("background");
+                        String user_url = element.findElement(By.xpath(".//header//div//div//a")).getAttribute("href");
+
+                        List<WebElement> rmlist = element.findElement(By.xpath(".//div//div[@class=\"_5rgt _5nk5 _5msi\"]//span"))
+                                .findElements(By.xpath(".//span[@class=\"text_exposed_hide\"]"));
+
+                        String message = element.findElement(By.xpath(".//div//div[@class=\"_5rgt _5nk5 _5msi\"]//span"))
+                                .getAttribute("innerHTML");
+
+                        if (rmlist != null) {
+                            for (WebElement element1 : rmlist) {
+                                String tmp = element1.getAttribute("outerHTML");
+                                message = message.replace(tmp, "");
+                            }
+                        }
+
+                        JSONObject jsonObj = new JSONObject(element.getAttribute("data-store"));
+                        String postId = jsonObj.get("feedback_target").toString();
+                        String user_id = "";
+
+                        if (user_url.contains("&fref=")) {
+                            user_url = user_url.split("&fref=")[0];
+                            user_id = user_url.split("id=")[1];
+                        } else {
+                            user_url = user_url.split("fref=")[0].substring(0, user_url.split("fref=")[0].length() - 1);
+                        }
+                        
+                        user_picture = ui.getUserPicture(user_picture);
+
+                        System.out.println(user_fullname);
+                        System.out.println(user_picture);
+                        System.out.println(user_url);
+                        System.out.println(user_id);
+                        System.out.println(message);
+                        System.out.println(postId);
+
+                        ui.writeLog("[SUCCESS] " + LocalDateTime.now());
+                    } catch (Exception ex) {
+                        ui.writeLog("[ERROR] " + LocalDateTime.now() + "");
+                        ui.writeLog("\tMessage: " + ex.getMessage());
+                        continue;
+                    }
+                }
+
+                Thread.sleep(60000);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            ui.restart();
+        }
+    }
+
+    public String getUserPicture(String css) {
+        String pattern = "\\(\\\"[\\w:\\/\\/.-0-9?=&]+\\\"\\)";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(css);
+
+        if (m.find()) {
+            if (m.group(0) != null) {
+                return m.group(0).substring(2, m.group(0).length() - 2);
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
+    public class Post {
+
+        private String user_id;
+        private String user_fullname;
+        private String user_picture;
+        private String user_url;
+        private String message;
+        private String post_id;
+
+        public void set(String user_id, String user_fullname, String created_time, String message, String post_id) {
+            this.user_id = user_id;
+            this.user_id = user_fullname;
+
+            this.user_id = message;
+            this.user_id = post_id;
+        }
+
+        public Post get() {
+            return this;
+        }
+    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnStop;
@@ -360,54 +506,4 @@ public class UI extends javax.swing.JFrame implements Runnable {
     private javax.swing.JTextField tfUsername;
     // End of variables declaration//GEN-END:variables
 
-    private static WebDriver driver = null;
-    private static final String FB_URL = "https://m.facebook.com";
-
-    public void callInsert() {
-        ui.writeLog("[SUCCESS] " + LocalDateTime.now());
-    }
-
-    @Override
-    public void run() {
-        try {
-            ui.infoAlert("Starting Chrome Webdriver...");
-            ui.writeLog("Starting Chrome Webdriver...");
-
-            System.setProperty("webdriver.chrome.driver", "D:\\facebook-group-spider\\chromedriver.exe");
-            UI.driver = new ChromeDriver();
-
-            ui.infoAlert("Processing...");
-
-            UI.driver.get(FB_URL);
-            
-            int count = Integer.parseInt(tfCount.getText().trim());
-            String groupId = tfGroupId.getText().trim();
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            UI.driver.findElement(By.name("email")).sendKeys(tfUsername.getText().trim());
-            UI.driver.findElement(By.name("pass")).sendKeys(pwfPassword.getText().trim());
-            UI.driver.findElement(By.name("login")).click();
-
-            for (int k = 1; k < count; k++) {
-                ui.writeLog("Run " + k + "/" + count);
-                
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(UI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                UI.driver.get(FB_URL + "/" + groupId);
-                
-//            driver.findElement(By.xpath("//*[@name='answer[" + k + "]'][@value='" + 1 + "']")).click();
-//            driver.findElement(By.className("btn")).click();
-                callInsert();
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
 }
