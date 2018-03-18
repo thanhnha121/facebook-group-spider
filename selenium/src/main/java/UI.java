@@ -1,9 +1,25 @@
 
 import java.awt.Color;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -391,6 +407,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
                 Thread.sleep(2000);
 
                 List<WebElement> elements = driver.findElements(By.xpath("//section//article"));
+                String result = "";
 
                 for (WebElement element : elements) {
                     try {
@@ -412,7 +429,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
                         }
 
                         JSONObject jsonObj = new JSONObject(element.getAttribute("data-store"));
-                        String postId = jsonObj.get("feedback_target").toString();
+                        String post_id = jsonObj.get("feedback_target").toString();
                         String user_id = "";
 
                         if (user_url.contains("&fref=")) {
@@ -421,15 +438,24 @@ public class UI extends javax.swing.JFrame implements Runnable {
                         } else {
                             user_url = user_url.split("fref=")[0].substring(0, user_url.split("fref=")[0].length() - 1);
                         }
-                        
+
                         user_picture = ui.getUserPicture(user_picture);
 
-                        System.out.println(user_fullname);
-                        System.out.println(user_picture);
-                        System.out.println(user_url);
-                        System.out.println(user_id);
-                        System.out.println(message);
-                        System.out.println(postId);
+//                        System.out.println(user_fullname);
+//                        System.out.println(user_picture);
+//                        System.out.println(user_url);
+//                        System.out.println(user_id);
+//                        System.out.println(message);
+//                        System.out.println(post_id);
+                        JSONObject jSONObject = new JSONObject();
+                        jSONObject.append("user_fullname", user_fullname);
+                        jSONObject.append("user_picture", user_picture);
+                        jSONObject.append("user_url", user_url);
+                        jSONObject.append("user_id", user_id);
+                        jSONObject.append("message", message);
+                        jSONObject.append("postId", post_id);
+
+                        result += JSONObject.valueToString(jSONObject) + "@@123shipperhn@@";
 
                         ui.writeLog("[SUCCESS] " + LocalDateTime.now());
                     } catch (Exception ex) {
@@ -439,12 +465,36 @@ public class UI extends javax.swing.JFrame implements Runnable {
                     }
                 }
 
+                boolean rs = ui.callInsert(result);
+
                 Thread.sleep(60000);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            ui.writeLog(e.getMessage());
             ui.restart();
         }
+    }
+
+    public boolean callInsert(String input) {
+
+        System.out.println(input);
+
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost("http://localhost:50706/Post/AddPosts");
+
+        List<NameValuePair> arguments = new ArrayList<>(1);
+        arguments.add(new BasicNameValuePair("data", input));
+
+        try {
+            request.setEntity(new UrlEncodedFormEntity(arguments, "UTF-8"));
+            HttpResponse response = client.execute(request);
+            HttpEntity entity = response.getEntity();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        return true;
     }
 
     public String getUserPicture(String css) {
@@ -460,28 +510,6 @@ public class UI extends javax.swing.JFrame implements Runnable {
             }
         } else {
             return "";
-        }
-    }
-
-    public class Post {
-
-        private String user_id;
-        private String user_fullname;
-        private String user_picture;
-        private String user_url;
-        private String message;
-        private String post_id;
-
-        public void set(String user_id, String user_fullname, String created_time, String message, String post_id) {
-            this.user_id = user_id;
-            this.user_id = user_fullname;
-
-            this.user_id = message;
-            this.user_id = post_id;
-        }
-
-        public Post get() {
-            return this;
         }
     }
 
