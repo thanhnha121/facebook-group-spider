@@ -409,7 +409,9 @@ public class UI extends javax.swing.JFrame implements Runnable {
                 List<WebElement> elements = driver.findElements(By.xpath("//section//article"));
                 String result = "";
 
+                int runnedCount = 0;
                 for (WebElement element : elements) {
+                    runnedCount++;
                     try {
                         String user_fullname = element.findElement(By.xpath(".//header//div//div//a//i")).getAttribute("aria-label");
                         String user_picture = element.findElement(By.xpath(".//header//div//div//a//i")).getCssValue("background");
@@ -447,15 +449,16 @@ public class UI extends javax.swing.JFrame implements Runnable {
 //                        System.out.println(user_id);
 //                        System.out.println(message);
 //                        System.out.println(post_id);
-                        JSONObject jSONObject = new JSONObject();
-                        jSONObject.append("user_fullname", user_fullname);
-                        jSONObject.append("user_picture", user_picture);
-                        jSONObject.append("user_url", user_url);
-                        jSONObject.append("user_id", user_id);
-                        jSONObject.append("message", message);
-                        jSONObject.append("postId", post_id);
 
-                        result += JSONObject.valueToString(jSONObject) + "@@123shipperhn@@";
+                        if (runnedCount != elements.size()) {
+                            result += "{\"user_fullname\":" + "\"" + user_fullname + "\","
+                                    + "\"user_picture\":" + "\"" + user_picture + "\","
+                                    + "\"user_url\":" + "\"" + user_url + "\","
+                                    + "\"user_id\":" + "\"" + user_id + "\","
+                                    + "\"message\":" + "\"" + message.replace("\"", "'") + "\","
+                                    + "\"post_id\":" + "\"" + post_id + "\""
+                                    + "},";
+                        }
 
                         ui.writeLog("[SUCCESS] " + LocalDateTime.now());
                     } catch (Exception ex) {
@@ -478,13 +481,11 @@ public class UI extends javax.swing.JFrame implements Runnable {
 
     public boolean callInsert(String input) {
 
-        System.out.println(input);
-
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost("http://localhost:50706/Post/AddPosts");
 
         List<NameValuePair> arguments = new ArrayList<>(1);
-        arguments.add(new BasicNameValuePair("data", input));
+        arguments.add(new BasicNameValuePair("data", "{\"list_posts\": [" + input + "]}"));
 
         try {
             request.setEntity(new UrlEncodedFormEntity(arguments, "UTF-8"));
