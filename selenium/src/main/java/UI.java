@@ -416,12 +416,21 @@ public class UI extends javax.swing.JFrame implements Runnable {
                         String user_fullname = element.findElement(By.xpath(".//header//div//div//a//i")).getAttribute("aria-label");
                         String user_picture = element.findElement(By.xpath(".//header//div//div//a//i")).getCssValue("background");
                         String user_url = element.findElement(By.xpath(".//header//div//div//a")).getAttribute("href");
+                        String full_picture = "";
+                        String message = "";
+                        String user_id = "";
 
                         List<WebElement> rmlist = element.findElement(By.xpath(".//div//div[@class=\"_5rgt _5nk5 _5msi\"]//span"))
                                 .findElements(By.xpath(".//span[@class=\"text_exposed_hide\"]"));
+                        WebElement messageElement = element.findElement(By.xpath(".//div//div[@class=\"_5rgt _5nk5 _5msi\"]//span"));
 
-                        String message = element.findElement(By.xpath(".//div//div[@class=\"_5rgt _5nk5 _5msi\"]//span"))
-                                .getAttribute("innerHTML");
+                        try {
+                            message = messageElement.findElement(By.xpath(".//div[@class=\"_1-sh\"]")).getAttribute("outerHTML")
+                                    .replace(messageElement.findElement(By.xpath(".//div[@class=\"_1-sh\"]//span[2]"))
+                                            .getAttribute("outerHTML"), "");
+                        } catch (Exception e1) {
+                            message = messageElement.getAttribute("innerHTML");
+                        }
 
                         if (rmlist != null) {
                             for (WebElement element1 : rmlist) {
@@ -430,9 +439,33 @@ public class UI extends javax.swing.JFrame implements Runnable {
                             }
                         }
 
+                        try {
+                            List<WebElement> removeIcons = messageElement.findElements(By.xpath(".//span[@class=\"_5mfr _47e3\"]"));
+                            for (WebElement e : removeIcons) {
+                                message = message.replace(e.findElement(By.xpath(".//span[@class=\"_7oe\"]")).getAttribute("outerHTML"), "");
+                            }
+                        } catch (Exception errRemoveIcon) {
+                            System.out.println(errRemoveIcon.getMessage());
+                        }
+
+                        try {
+                            List<WebElement> removeIcons = messageElement.findElements(By.xpath(".//span[@class=\"_47e3 _5mfr\"]"));
+                            for (WebElement e : removeIcons) {
+                                message = message.replace(e.findElement(By.xpath(".//span[@class=\"_7oe\"]")).getAttribute("outerHTML"), "");
+                            }
+                        } catch (Exception errRemoveIcon) {
+                            System.out.println(errRemoveIcon.getMessage());
+                        }
+
+                        try {
+                            full_picture = ui.getUserPicture(element
+                                    .findElement(By.xpath(".//div[@class=\"story_body_container\"]//div[2]//div//a//div//i[1]"))
+                                    .getAttribute("style"));
+                        } catch (Exception e1) {
+                        }
+
                         JSONObject jsonObj = new JSONObject(element.getAttribute("data-store"));
                         String post_id = jsonObj.get("feedback_target").toString();
-                        String user_id = "";
 
                         if (user_url.contains("&fref=")) {
                             user_url = user_url.split("&fref=")[0];
@@ -449,14 +482,14 @@ public class UI extends javax.swing.JFrame implements Runnable {
 //                        System.out.println(user_id);
 //                        System.out.println(message);
 //                        System.out.println(post_id);
-
                         if (runnedCount != elements.size()) {
                             result += "{\"user_fullname\":" + "\"" + user_fullname + "\","
                                     + "\"user_picture\":" + "\"" + user_picture + "\","
                                     + "\"user_url\":" + "\"" + user_url + "\","
                                     + "\"user_id\":" + "\"" + user_id + "\","
                                     + "\"message\":" + "\"" + message.replace("\"", "'") + "\","
-                                    + "\"post_id\":" + "\"" + post_id + "\""
+                                    + "\"post_id\":" + "\"" + post_id + "\","
+                                    + "\"full_picture\":" + "\"" + full_picture + "\""
                                     + "},";
                         }
 
@@ -470,7 +503,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
 
                 boolean rs = ui.callInsert(result);
 
-                Thread.sleep(60000);
+                Thread.sleep(5000);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -494,7 +527,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         return true;
     }
 
