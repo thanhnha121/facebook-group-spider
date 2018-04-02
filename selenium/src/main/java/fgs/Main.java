@@ -1,13 +1,11 @@
+package fgs;
+
 
 import java.awt.Color;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.http.HttpEntity;
@@ -16,10 +14,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -35,12 +31,12 @@ import org.openqa.selenium.chrome.ChromeDriver;
  *
  * @author nhaht
  */
-public class UI extends javax.swing.JFrame implements Runnable {
+public class Main extends javax.swing.JFrame implements Runnable {
 
     /**
      * Creates new form UI
      */
-    public UI() {
+    public Main() {
         initComponents();
     }
 
@@ -70,6 +66,8 @@ public class UI extends javax.swing.JFrame implements Runnable {
         lblAlert = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         btnStop = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        tfHookUrl = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Facebook Group Spider");
@@ -154,7 +152,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
         jLabel6.setText("Count");
 
         tfCount.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
-        tfCount.setText("100");
+        tfCount.setText("1000");
         tfCount.setToolTipText("Count");
         tfCount.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         tfCount.setMargin(new java.awt.Insets(5, 10, 5, 10));
@@ -179,6 +177,15 @@ public class UI extends javax.swing.JFrame implements Runnable {
             }
         });
 
+        jLabel7.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        jLabel7.setText("Hook URL");
+
+        tfHookUrl.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        tfHookUrl.setText("http://shipperhn.com/Post/AddPosts");
+        tfHookUrl.setToolTipText("Count");
+        tfHookUrl.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        tfHookUrl.setMargin(new java.awt.Insets(5, 10, 5, 10));
+
         javax.swing.GroupLayout fgsPanelLayout = new javax.swing.GroupLayout(fgsPanel);
         fgsPanel.setLayout(fgsPanelLayout);
         fgsPanelLayout.setHorizontalGroup(
@@ -187,19 +194,29 @@ public class UI extends javax.swing.JFrame implements Runnable {
                 .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(fgsPanelLayout.createSequentialGroup()
                         .addGap(22, 22, 22)
-                        .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tfCount, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2)
-                            .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(pwfPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnStop, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5)
-                            .addComponent(tfGroupId, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(fgsPanelLayout.createSequentialGroup()
+                                .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(tfCount, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2)
+                                    .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(pwfPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnStop, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5)
+                                    .addComponent(tfGroupId, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel4)
+                            .addGroup(fgsPanelLayout.createSequentialGroup()
+                                .addComponent(lblAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1)
+                            .addComponent(jLabel7)
+                            .addComponent(tfHookUrl)))
                     .addGroup(fgsPanelLayout.createSequentialGroup()
                         .addGap(182, 182, 182)
                         .addComponent(jLabel3))
@@ -208,17 +225,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
                         .addComponent(jLabel6))
                     .addGroup(fgsPanelLayout.createSequentialGroup()
                         .addGap(22, 22, 22)
-                        .addComponent(jLabel1))
-                    .addGroup(fgsPanelLayout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addGroup(fgsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, fgsPanelLayout.createSequentialGroup()
-                                    .addComponent(lblAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addComponent(jLabel1)))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
         fgsPanelLayout.setVerticalGroup(
@@ -243,6 +250,10 @@ public class UI extends javax.swing.JFrame implements Runnable {
                     .addComponent(tfCount, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnStop, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tfHookUrl, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -305,7 +316,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
 
     public void stopDriver() {
         try {
-            UI.driver.quit();
+            Main.driver.quit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -326,6 +337,10 @@ public class UI extends javax.swing.JFrame implements Runnable {
         }
         if (tfCount.getText().equals("")) {
             warningAlert("Warning: Empty count!");
+            return false;
+        }
+        if (tfHookUrl.getText().equals("")) {
+            warningAlert("Warning: Hook URL!");
             return false;
         }
         return true;
@@ -351,10 +366,10 @@ public class UI extends javax.swing.JFrame implements Runnable {
     }
 
     private Thread t;
-    private static UI ui;
+    private static Main ui;
 
     public static void main(String args[]) {
-        ui = new UI();
+        ui = new Main();
         ui.setVisible(true);
         ui.alert("Ready!");
         ui.writeLog(LocalDateTime.now() + "");
@@ -386,23 +401,23 @@ public class UI extends javax.swing.JFrame implements Runnable {
             String groupId = tfGroupId.getText().trim();
 
             System.setProperty("webdriver.chrome.driver", "D:\\facebook-group-spider\\chromedriver.exe");
-            UI.driver = new ChromeDriver();
+            Main.driver = new ChromeDriver();
 
             ui.infoAlert("Processing...");
 
-            UI.driver.get(FB_URL);
+            Main.driver.get(FB_URL);
 
             Thread.sleep(2000);
 
-            UI.driver.findElement(By.name("email")).sendKeys(tfUsername.getText().trim());
-            UI.driver.findElement(By.name("pass")).sendKeys(pwfPassword.getText().trim());
-            UI.driver.findElement(By.name("login")).click();
+            Main.driver.findElement(By.name("email")).sendKeys(tfUsername.getText().trim());
+            Main.driver.findElement(By.name("pass")).sendKeys(pwfPassword.getText().trim());
+            Main.driver.findElement(By.name("login")).click();
 
             Thread.sleep(2000);
 
             for (int k = 1; k < count; k++) {
                 ui.writeLog("Run " + k + "/" + count);
-                UI.driver.get(FB_URL + "/" + groupId);
+                Main.driver.get(FB_URL + "/" + groupId);
 
                 Thread.sleep(2000);
 
@@ -476,12 +491,6 @@ public class UI extends javax.swing.JFrame implements Runnable {
 
                         user_picture = ui.getUserPicture(user_picture);
 
-//                        System.out.println(user_fullname);
-//                        System.out.println(user_picture);
-//                        System.out.println(user_url);
-//                        System.out.println(user_id);
-//                        System.out.println(message);
-//                        System.out.println(post_id);
                         if (runnedCount != elements.size()) {
                             result += "{\"user_fullname\":" + "\"" + user_fullname + "\","
                                     + "\"user_picture\":" + "\"" + user_picture + "\","
@@ -515,7 +524,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
     public boolean callInsert(String input) {
 
         HttpClient client = HttpClientBuilder.create().build();
-        HttpPost request = new HttpPost("http://localhost:50706/Post/AddPosts");
+        HttpPost request = new HttpPost(tfHookUrl.getText());
 
         List<NameValuePair> arguments = new ArrayList<>(1);
         arguments.add(new BasicNameValuePair("data", "{\"list_posts\": [" + input + "]}"));
@@ -558,6 +567,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAlert;
@@ -565,6 +575,7 @@ public class UI extends javax.swing.JFrame implements Runnable {
     private javax.swing.JTextArea taStatus;
     private javax.swing.JTextField tfCount;
     private javax.swing.JTextField tfGroupId;
+    private javax.swing.JTextField tfHookUrl;
     private javax.swing.JTextField tfUsername;
     // End of variables declaration//GEN-END:variables
 
